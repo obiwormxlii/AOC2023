@@ -20,9 +20,13 @@ defmodule Day3 do
     |> Enum.scan(%{:x => 0}, fn line, acc ->
       parse_line(line, acc)
     end)
-    |> Enum.map(&find_valid/1)
+    |> Enum.flat_map(&Map.fetch!(&1, :col))
 
-    # IO.inspect(coordinates)
+    valid = Enum.map(coordinates, & find_valid(&1, coordinates))
+    |> Enum.filter(fn x -> x != nil end)
+
+    IO.inspect(valid)
+
 
   end
 
@@ -39,23 +43,31 @@ defmodule Day3 do
 
   defp parse_col(col, acc) do
     %{:x => acc.x, :y => acc.y + 1, :sym => col}
+
   end
 
-  defp find_valid(row) do
-    # IO.inspect(row.col)
-    row.col
-    |> Enum.each(fn col ->
-        case col do
-          %{sym: "."} -> IO.inspect(:error)
-          _ -> IO.inspect(:ok)
+  defp find_valid(row, list) do
+        case row do
+          x when x.sym in ["0", "1", "2", "3", "4", "5", "6", "7", "8", "9"] ->
+            valid = Enum.filter(list, fn x ->
+              ((x.x == row.x or x.x == row.x-1 or x.x == row.x+1) and (x.y == row.y-1 or x.y == row.y+1)) or
+              ((x.y == row.y or x.y == row.y-1 or x.y == row.y+1) and (x.x == row.x-1 or x.x == row.x+1))
+            end)
+            |> Enum.any?(fn x ->
+              x.sym not in ["0", "1", "2", "3", "4", "5", "6", "7", "8", "9", "."]
+            end)
+
+          Map.put(row, :valid, valid)
+          _ -> Map.put(row, :valid, false)
         end
 
-        IO.inspect(col)
-      end
-    )
-
   end
 
+  # defp is_valid?(line, list) do
+  #   case line do
+  #   end
+
+  # end
 
 end
 
